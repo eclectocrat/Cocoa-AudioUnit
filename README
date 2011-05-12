@@ -18,12 +18,14 @@ if([outputUnit initialize] != noErr)
 {
     NSError * whatHappened = [outputUnit lastError];
     NSLog(@"Error initializing output unit: %@", whatHappened);
+    return -1;
 }
 if([outputUnit startOutput] == NO)
 {
     // You can also use the NSError interface as above...
     const OSStatus whatHappened = [outputUnit lastResult];
     NSLog(@"Error starting output unit: %d", whatHappened);
+    return -1;
 }
 
 // From now on error checking skipped for brevity.
