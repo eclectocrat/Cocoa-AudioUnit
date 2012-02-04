@@ -74,14 +74,20 @@ static AUGraph _defaultGraph;
 - (BOOL) ark_readUnitText:(ComponentDescription*)tempDesc
 {
 	// I know this is ugly, welcome to the arcane arts.
-	char name[255];
-	char info[255];
+	CFStringRef cfname;
+	CFStringRef cfinfo;
 	Handle nameHandle = NewHandle(255); 
 	Handle infoHandle = NewHandle(255);
 	OSStatus ret = GetComponentInfo(_component, tempDesc, nameHandle, infoHandle, NULL);
 	if(ret == noErr) {
-		CopyPascalStringToC((ConstStr255Param)(*nameHandle),name);
-		CopyPascalStringToC((ConstStr255Param)(*infoHandle),info);
+        cfname = CFStringCreateWithPascalString(
+            NULL, 
+            (ConstStr255Param)(*nameHandle), 
+            kCFStringEncodingUTF8);
+		cfinfo = CFStringCreateWithPascalString(
+            NULL,
+            (ConstStr255Param)(*infoHandle),
+            kCFStringEncodingUTF8);
 	}
 	else {
 		[self registerResult:ret];
@@ -90,10 +96,11 @@ static AUGraph _defaultGraph;
 	DisposeHandle(nameHandle);
 	DisposeHandle(infoHandle);
 	
-	[self setName:[NSString stringWithCString:name]];
+	[self setName:(NSString*)cfname];
+    CFRelease(cfname);
 	
 	if(_info) [_info release];
-	_info = [[NSString stringWithCString:info] retain];
+	_info = (NSString*)cfinfo;
 	
 	return YES;
 }
@@ -229,7 +236,7 @@ static NSString * IsInitializedKey			= @"ArkAudioUnit.isInitialized";
 	////////////////////////////////////
 	// First get ComponentDescrpition
 	////////////////////////////////////
-	unsigned bytesLen;
+	NSUInteger bytesLen;
 	const uint8_t * rawDesc = [coder decodeBytesForKey:
 		ComponentDescriptionKey returnedLength:&bytesLen];
 	if(bytesLen != sizeof(ComponentDescription)) 
@@ -399,7 +406,7 @@ static NSString * IsInitializedKey			= @"ArkAudioUnit.isInitialized";
 {
 	if([self isOutput])
 	{
-		if([self registerResult:AudioOutputUnitStart(_audioUnit)] == noErr);
+		if([self registerResult:AudioOutputUnitStart(_audioUnit)] == noErr)
 			return YES;
 	}
 	return NO;
@@ -409,7 +416,7 @@ static NSString * IsInitializedKey			= @"ArkAudioUnit.isInitialized";
 {
 	if([self isOutput])
 	{
-		if([self registerResult:AudioOutputUnitStop(_audioUnit)] == noErr);
+		if([self registerResult:AudioOutputUnitStop(_audioUnit)] == noErr)
 			return YES;
 	}
 	return NO;
@@ -652,7 +659,7 @@ static NSString * IsInitializedKey			= @"ArkAudioUnit.isInitialized";
 				   formatDescription:(AudioStreamBasicDescription*)desc;
 {
 	UInt32 descSz = sizeof(AudioStreamBasicDescription);
-	memset(&desc, 0, descSz);
+	memset(desc, 0, descSz);
 	return [self registerResult:AudioUnitGetProperty(_audioUnit,
 		kAudioUnitProperty_StreamFormat, scope,busNum,desc,&descSz)];
 }

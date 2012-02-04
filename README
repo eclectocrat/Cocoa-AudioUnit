@@ -6,9 +6,6 @@ ArkAudioUnitManager * unitManager = [ArkAudioUnitManager defaultManager];
 if(![ArkAudioUnitManager installDefaultAUGraph])
     // Handle Error!
 
-// To be perfectly honest I'm writing this from memory and I don't know if you need to install the default graph before
-// or after you create the unit manager, or if it even matters. I'm on holiday now and away from a mac, so I can't test.
-
 // This is the simple way, but if you only need certain types of unit then you can call the individual list creation
 // methods (-createOutputList, -createRealtimeEffectList, etc.).
 [unitManager createAllAudioUnitLists];
@@ -17,7 +14,7 @@ ArkAudioUnit * outputUnit = [unitManager createDefaultOutput];
 if([outputUnit initialize] != noErr)
 {
     NSError * whatHappened = [outputUnit lastError];
-    NSLog(@"Error initializing output unit: %@", whatHappened);
+    NSLog(@"Error initializing output unit: %@", [whatHappened localizedDescription]);
     return -1;
 }
 if([outputUnit startOutput] == NO)
@@ -58,6 +55,8 @@ id([unit startOutput] == NO)
     // Hi Mom!
 }
 
-I've written this from memory while on holiday after not using this library for over 5 years, so I don't know if I'm making any sense. I DO remember that this was designed as a thin wrapper around AudioUnit and AUGraph, so if you understand the core Apple API's then this just adds a bit of convenience and the Cocoa Way(TM) (circa 2005!) to those same API's, and doesn't mess with the basic paradigm. Also the code is straightforward and readable, so go ahead and look in the implementation files to understand what's going on. All the CoreAudio structs that are used in this library are displayed in comments in the header files, to save you from digging into coreaudio docs.
+This was designed as a thin wrapper around AudioUnit and AUGraph, so if you understand the core Apple API's then this just adds a bit of convenience and the Cocoa Way(TM) (circa 2005!) to those same API's, and doesn't mess with the basic paradigm. Also the code is straightforward and readable, so go ahead and look in the implementation files to understand what's going on. All the CoreAudio structs that are used in this library are displayed in comments in the header files, to save you from digging into coreaudio docs.
+
+I've just updated the code for use on my 10.6 machine, it needed a few tweaks to the pascal string management (yuck!), but was otherwise ok.
 
 Questions and comments are welcome. Good Luck! 

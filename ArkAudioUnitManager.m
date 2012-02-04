@@ -23,7 +23,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-static int sort_names (id n1, id n2, void*context)
+static NSInteger sort_names (id n1, id n2, void*context)
 {
 	return [(NSString*)n1 compare:n2];
 }
@@ -104,26 +104,36 @@ static ArkAudioUnitManager  * theDefaultManager;
 {
 	assert(tempComp);
 	
-	char name[255];
-	char info[255];
+	CFStringRef cfname;
+	CFStringRef cfinfo;
 	Handle nameHandle = NewHandle(255); 
 	Handle infoHandle = NewHandle(255);
 	OSStatus ret = GetComponentInfo(tempComp, tempDesc, nameHandle, infoHandle, NULL);
 	if(ret == noErr) {
-		CopyPascalStringToC((ConstStr255Param)(*nameHandle),name);
-		CopyPascalStringToC((ConstStr255Param)(*infoHandle),info);
+        cfname = CFStringCreateWithPascalString(
+            NULL, 
+            (ConstStr255Param)(*nameHandle), 
+            kCFStringEncodingUTF8);
+		cfinfo = CFStringCreateWithPascalString(
+            NULL,
+            (ConstStr255Param)(*infoHandle),
+            kCFStringEncodingUTF8);
 	}
 	else return nil;
-	
+    
 	DisposeHandle(nameHandle);
 	DisposeHandle(infoHandle);
 	
-	return [NSArray arrayWithObjects:
-		[NSString stringWithCString:name],
-		[NSString stringWithCString:info], nil];
+	NSArray * temp = [NSArray arrayWithObjects:
+		(NSString*)cfname,
+		(NSString*)cfinfo, nil];
+        
+    CFRelease(cfname);
+    CFRelease(cfinfo);
+    return temp;
 }
 
-+ (NSDictionary*) createUnitListWithType:(int)uType
++ (NSMutableDictionary*) createUnitListWithType:(int)uType
 {
 	NSMutableDictionary * dict = [NSMutableDictionary dictionary];
 	
